@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "trupp.ware.mixin.client",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ExampleClientMixin", "KeybindMixin", "TickMixin", "GuiMixin",
+		"KeyMappingMixin", "LivingEntityRendererMixin",
+		"ClientCommonNetworkHandlerMixin", "ClientConnectionMixin",
+		"ClientPlayerEntityMixin", "MultiPlayerGameModeMixin", "MixinKeyboardInput", "ClientPacketListenerMixin",
+		"MixinPlayer", "AnimationMixin", "KeyboardInputMixin", "EntityMixin", "LivingEntityMixin", "MixinLocalPlayer"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
