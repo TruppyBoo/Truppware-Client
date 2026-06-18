@@ -8,6 +8,7 @@ import net.minecraft.world.item.Items;
 import org.lwjgl.glfw.GLFW;
 import trupp.ware.event.Event;
 import trupp.ware.event.events.EventAttackStrength;
+import trupp.ware.event.events.EventRender;
 import trupp.ware.event.events.EventTick;
 import trupp.ware.event.events.Timing;
 import trupp.ware.interfaces.IKeyMappingExt;
@@ -27,6 +28,7 @@ public class SpearFly extends Module {
     @Override
     public void onEvent(Event event, Timing time) {
         if (event instanceof EventTick) {
+            if(time == Timing.POST) return;
             if (mc.player == null || mc.level == null) return;
 
             // Apply client-side haste 255 every tick
@@ -68,7 +70,7 @@ public class SpearFly extends Module {
                     java.lang.reflect.Field f = net.minecraft.world.entity.LivingEntity.class
                             .getDeclaredField("attackStrengthTicker");
                     f.setAccessible(true);
-                    f.setInt(mc.player, 100);
+                    f.setInt(mc.player, 500);
                 } catch (Exception ignored) {}
 
                 onSpear = true;

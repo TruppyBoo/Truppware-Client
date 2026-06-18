@@ -22,6 +22,7 @@ public class SpearSpam extends Module {
 
     @Override
     public void onEvent(Event event, Timing time) {
+        if(time == Timing.POST) return;
         if (!(event instanceof EventTick)) return;
         if (mc.player == null || mc.level == null) return;
 

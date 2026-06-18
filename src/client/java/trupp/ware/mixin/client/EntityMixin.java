@@ -8,6 +8,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import trupp.ware.TruppWareClient;
+import trupp.ware.event.events.EventTick;
+import trupp.ware.event.events.Timing;
 import trupp.ware.truppware.module.COMBAT.Aura;
 import trupp.ware.truppware.module.player.Scaffold;
 import trupp.ware.util.RotationUtil;
@@ -21,6 +24,12 @@ public class EntityMixin {
     @Unique
     private boolean truppware$applying = false;
 
+
+
+
+
+
+
     @Inject(method = "moveRelative", at = @At("HEAD"))
     private void onMoveRelativeHead(float speed, Vec3 input, CallbackInfo ci) {
         Entity self = (Entity)(Object)this;
@@ -28,10 +37,9 @@ public class EntityMixin {
         if (input.x == 0 && input.z == 0) return;
         if (truppware$applying) return;
 
-        boolean auraActive     = Aura.isEnabledStatic() && Aura.targetInRange;
-        boolean scaffoldActive = Scaffold.isEnabledStatic();
-
-        if (!auraActive && !scaffoldActive) return;
+        // Gate on the central 'active' flag so the move-fix keeps running through the smooth-out
+        // and eases (serverYaw eases back to real) instead of cutting out and lurching.
+        if (!RotationUtil.active) return;
 
         truppware$storedYaw = player.getYRot();
         truppware$applying  = true;

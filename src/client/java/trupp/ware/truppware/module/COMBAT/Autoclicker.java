@@ -25,11 +25,11 @@ public class Autoclicker extends Module {
     private long currentClickAt = 75;
     private long currentResumeAt = 150;
 
-    public NumberSetting minClickAt  = new NumberSetting("MinClickAt",  60,  10, 500, 5);
-    public NumberSetting maxClickAt  = new NumberSetting("MaxClickAt",  90,  10, 500, 5);
-    public NumberSetting minResumeAt = new NumberSetting("MinResumeAt", 130, 10, 500, 5);
-    public NumberSetting maxResumeAt = new NumberSetting("MaxResumeAt", 170, 10, 500, 5);
-    public NumberSetting hitChance   = new NumberSetting("HitChance",   85,  1,  100, 1);
+    public NumberSetting minClickAt  = new NumberSetting("MinClickAt",  10, 500, 60,  5);
+    public NumberSetting maxClickAt  = new NumberSetting("MaxClickAt",  10, 500, 90,  5);
+    public NumberSetting minResumeAt = new NumberSetting("MinResumeAt", 10, 500, 130, 5);
+    public NumberSetting maxResumeAt = new NumberSetting("MaxResumeAt", 10, 500, 170, 5);
+    public NumberSetting hitChance   = new NumberSetting("HitChance",   1,  100, 85,  1);
 
     public Autoclicker() {
         super("Triggerbot", Category.COMBAT, "Automatically clicks on enemies", GLFW.GLFW_KEY_H);
@@ -39,6 +39,7 @@ public class Autoclicker extends Module {
     @Override
     public void onEvent(Event e, Timing time) {
         if (!(e instanceof EventTick)) return;
+        if(time == Timing.POST) return;
         if (mc.player == null || mc.level == null) return;
 
         KeyMapping useKey = mc.options.keyUp;

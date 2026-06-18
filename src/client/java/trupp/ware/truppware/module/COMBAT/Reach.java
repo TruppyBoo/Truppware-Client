@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import trupp.ware.event.Event;
 import trupp.ware.event.events.EventAttack;
 import trupp.ware.event.events.EventTick;
+import trupp.ware.event.events.EventUpdate;
 import trupp.ware.event.events.Timing;
 import trupp.ware.truppware.module.Category;
 import trupp.ware.truppware.module.Module;
@@ -18,9 +19,9 @@ public class Reach extends Module {
     private final Minecraft mc = Minecraft.getInstance();
     private final TimerUtil timer = new TimerUtil();
 
-    public NumberSetting minReach = new NumberSetting("MinReach", 3.0, 3.0, 6.0, 0.1);
-    public NumberSetting maxReach = new NumberSetting("MaxReach", 3.2, 3.0, 6.0, 0.1);
-    public NumberSetting aboveChance = new NumberSetting("AboveChance", 60, 0, 100, 1);
+    public NumberSetting minReach = new NumberSetting("MinReach", 3.0, 6.0, 3.0, 0.1);
+    public NumberSetting maxReach = new NumberSetting("MaxReach", 3.0, 6.0, 3.2, 0.1);
+    public NumberSetting aboveChance = new NumberSetting("AboveChance", 0, 100, 60, 1);
 
     public static double currentReach = 3.0;
 
@@ -33,7 +34,7 @@ public class Reach extends Module {
     public void onEvent(Event e, Timing time) {
         if (!(e instanceof EventTick)) return;
         if (mc.player == null) return;
-
+        if(time == Timing.POST) return;
         if (!mc.mouseHandler.isLeftPressed()) {
             currentReach = 3.0;
             return;

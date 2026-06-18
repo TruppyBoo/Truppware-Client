@@ -21,8 +21,8 @@ public class FastPlace extends Module {
     private final Random random = new Random();
 
     // Settings
-    public final NumberSetting minCooldown = new NumberSetting("MinCooldown", 0, 0, 5, 1);
-    public final NumberSetting maxCooldown = new NumberSetting("MaxCooldown", 0, 0, 5, 1);
+    public final NumberSetting minCooldown = new NumberSetting("MinCooldown", 0, 5, 0, 1);
+    public final NumberSetting maxCooldown = new NumberSetting("MaxCooldown", 0, 5, 0, 1);
     public final BooleanSetting blocks = new BooleanSetting("Blocks", true);
     public final BooleanSetting projectiles = new BooleanSetting("Projectiles", false);
 

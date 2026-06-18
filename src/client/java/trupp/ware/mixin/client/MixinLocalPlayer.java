@@ -6,14 +6,21 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec2;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import trupp.ware.TruppWareClient;
 import trupp.ware.event.events.EventNoSlow;
+import trupp.ware.event.events.EventTick;
 import trupp.ware.event.events.Timing;
 import trupp.ware.truppware.module.Manager;
 import trupp.ware.truppware.module.Module;
 
 @Mixin(LocalPlayer.class)
 public class MixinLocalPlayer {
+
+
+
+
 
     @WrapOperation(
             method = "modifyInput",

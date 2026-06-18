@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import trupp.ware.TruppWareClient;
 import trupp.ware.event.events.EventSwingSpeed;
+import trupp.ware.event.events.EventTick;
 import trupp.ware.event.events.Timing;
 import trupp.ware.truppware.module.COMBAT.Aura;
 import trupp.ware.truppware.module.player.Scaffold;
@@ -35,14 +36,15 @@ public class LivingEntityMixin {
             method = "jumpFromGround",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F")
     )
+
+
+
+
+
+
     private float hookJumpYaw(LivingEntity instance) {
         if (!(instance instanceof LocalPlayer)) return instance.getYRot();
-
-
-        if (Aura.isEnabledStatic() && Aura.targetInRange) return RotationUtil.serverYaw;
-        if (Scaffold.isEnabledStatic() && Scaffold.rotating) return RotationUtil.serverYaw;
-
-        return instance.getYRot();
+        return RotationUtil.active ? RotationUtil.serverYaw : instance.getYRot();
     }
 
     @Inject(method = "getCurrentSwingDuration", at = @At("HEAD"), cancellable = true)
@@ -54,26 +56,8 @@ public class LivingEntityMixin {
         }
     }
 
-    @Inject(method = "tick", at = @At("TAIL"))
-    private void hookHeadRot(CallbackInfo ci) {
-        LivingEntity self = (LivingEntity)(Object)this;
-        if (!(self instanceof LocalPlayer)) return;
-
-
-        if (Aura.isEnabledStatic() && Aura.targetInRange) {
-            yHeadRot  = Aura.yaw;
-            yHeadRotO = Aura.yaw;
-            yBodyRot = Aura.yaw;
-            yBodyRotO = Aura.yaw;
-            return;
-        }
-
-
-        if (Scaffold.isEnabledStatic()) {
-            yHeadRot  = RotationUtil.serverYaw;
-            yHeadRotO = RotationUtil.serverYaw;
-            yBodyRot = RotationUtil.serverYaw;
-            yBodyRotO = RotationUtil.serverYaw;
-        }
-    }
+    // NOTE: we intentionally do NOT force yHeadRot/yBodyRot here anymore. Writing the real entity
+    // fields left the body stuck at the aim yaw, so on release vanilla snapped it back to the
+    // movement direction. The visible model is driven entirely (and smoothly) by the render-state
+    // override in LivingEntityRendererMixin, gated on RotationUtil.active.
 }

@@ -37,6 +37,7 @@ public class WTap extends Module {
     @Override
     public void onEvent(Event e, Timing time) {
         if (e instanceof EventTick) {
+            if(time == Timing.POST) return;
             Window window = mc.getWindow();
             int keyCode = mc.options.keyUp.getDefaultKey().getValue();
 

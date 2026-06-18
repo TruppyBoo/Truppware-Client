@@ -43,6 +43,7 @@ public class BlockHit extends Module {
     @Override
     public void onEvent(Event event, Timing time) {
         if (!(event instanceof EventTick)) return;
+        if(time == Timing.POST) return;
         if (mc.player == null || mc.level == null) return;
 
         if (!mc.player.getMainHandItem().is(net.minecraft.tags.ItemTags.SWORDS)) {
@@ -104,7 +105,7 @@ public class BlockHit extends Module {
                 blocking = true;
             }
 
-            unblockTime   = now + ThreadLocalRandom.current().nextLong(75, 110);
+            unblockTime   = now + ThreadLocalRandom.current().nextLong(45, 85);
             nextBlockTime = now + getRandomDelay();
 
         } else {

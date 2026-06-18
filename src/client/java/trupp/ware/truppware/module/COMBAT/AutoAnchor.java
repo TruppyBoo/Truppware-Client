@@ -20,7 +20,7 @@ public class AutoAnchor extends Module {
     private final Minecraft mc = Minecraft.getInstance();
     private final TimerUtil timer = new TimerUtil();
 
-    public NumberSetting delay = new NumberSetting("Delay", 15, 0, 200, 5);
+    public NumberSetting delay = new NumberSetting("Delay", 0, 200, 15, 5);
 
     private enum State { IDLE, CHARGE, EXPLODE, RESTORE }
     private State state = State.IDLE;
@@ -38,6 +38,7 @@ public class AutoAnchor extends Module {
     @Override
     public void onEvent(Event event, Timing time) {
         if (!(event instanceof EventTick)) return;
+        if(time == Timing.POST) return;
         if (mc.player == null || mc.level == null) return;
 
         IKeyMappingExt use = (IKeyMappingExt) mc.options.keyUse;

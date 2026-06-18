@@ -29,9 +29,9 @@ public class FakeLag extends Module {
     public static final List<Packet<?>> sharedQueue = new ArrayList<>();
     public static boolean sending = false;
 
-    public NumberSetting range       = new NumberSetting("Range",        5,   1,    10,   0.5);
-    public NumberSetting minDelay    = new NumberSetting("MinDelay",     200, 50,   2000, 10);
-    public NumberSetting maxDelay    = new NumberSetting("MaxDelay",     600, 50,   2000, 10);
+    public NumberSetting range       = new NumberSetting("Range",        1,   10,   5,    0.5);
+    public NumberSetting minDelay    = new NumberSetting("MinDelay",     50,  2000, 200,  10);
+    public NumberSetting maxDelay    = new NumberSetting("MaxDelay",     50,  2000, 600,  10);
     public BooleanSetting flushOnHit = new BooleanSetting("FlushOnHit", true);
 
     public FakeLag() {
@@ -50,6 +50,7 @@ public class FakeLag extends Module {
     @Override
     public void onEvent(Event e, Timing time) {
         if (e instanceof EventTick) {
+            if(time == Timing.POST) return;
             if (mc.player == null || mc.level == null) {
                 hardReset();
                 return;
@@ -85,6 +86,20 @@ public class FakeLag extends Module {
             Packet<?> packet = eventPacket.getPacket();
 
             if (eventPacket.getPacketDih() == PacketDih.INCOMING) {
+                // Server is switching us to the CONFIGURATION phase (e.g. swapping sub-servers
+                // inside a network). The netty pipeline gets torn down and rebuilt; flushing our
+                // held PLAY packets across that transition races the reconfiguration task and
+                // corrupts the channel (UnsupportedOperationException: unsupported message type ...
+                // -> disconnect). Drop the queue WITHOUT sending and stop buffering.
+                if (packet instanceof ClientboundStartConfigurationPacket) {
+                    sharedQueue.clear();
+                    sending = false;
+                    wasNearPlayer = false;
+                    currentDelay = pickDelay();
+                    burstTimer.reset();
+                    recoilTimer.reset();
+                    return;
+                }
                 if (packet instanceof ClientboundPlayerPositionPacket
                         || packet instanceof ClientboundDisconnectPacket
                         || packet instanceof ClientboundRespawnPacket) {

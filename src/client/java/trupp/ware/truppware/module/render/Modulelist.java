@@ -1,7 +1,5 @@
 package trupp.ware.truppware.module.render;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import trupp.ware.event.Event;
 import trupp.ware.event.events.EventRender;
@@ -10,6 +8,7 @@ import trupp.ware.truppware.module.Category;
 import trupp.ware.truppware.module.Manager;
 import trupp.ware.truppware.module.Module;
 import trupp.ware.util.ColourUtil;
+import trupp.ware.util.Fonts;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,9 +40,10 @@ public class Modulelist extends Module {
     public void onEvent(Event e, Timing time) {
         if (!(e instanceof EventRender event)) return;
 
-        Minecraft mc = Minecraft.getInstance();
-        Font font = mc.font;
         GuiGraphics graphics = event.getGuiGraphics();
+        if (!Fonts.MAIN.isReady()) return;
+
+        final float scale = 0.22f;
 
         long now = System.currentTimeMillis();
         float delta = Math.min((now - lastFrame) / 1000f, 0.1f);
@@ -52,7 +52,7 @@ public class Modulelist extends Module {
         // ── ARRAYLIST ──────────────────────────────────────────────
         List<Module> activeModules = Manager.trupp.modules.stream()
                 .filter(Module::getToggled)
-                .sorted(Comparator.comparingInt(m -> -font.width(m.getName())))
+                .sorted(Comparator.comparingDouble(m -> -Fonts.MAIN.getWidth(m.getName(), scale)))
                 .collect(Collectors.toList());
 
         for (Module m : activeModules) {
@@ -72,6 +72,9 @@ public class Modulelist extends Module {
 
         int screenWidth = graphics.guiWidth();
         int screenHeight = graphics.guiHeight();
+
+        float textHeight = Fonts.MAIN.getHeight(scale);
+        int barHeight = (int) textHeight + 4;
         float y = 4f;
 
         for (int i = 0; i < activeModules.size(); i++) {
@@ -81,13 +84,12 @@ public class Modulelist extends Module {
             float anim = animations.getOrDefault(name, 1f);
             float ease = anim * anim * (3f - 2f * anim);
 
-            int textWidth = font.width(name);
-            int barHeight = font.lineHeight + 4;
-            int barWidth = textWidth + 10;
+            float textWidth = Fonts.MAIN.getWidth(name, scale);
+            int barWidth = (int) textWidth + 10;
 
             float slideOffset = (1f - ease) * 20f;
             int barX = (int)(screenWidth - barWidth + slideOffset);
-            int x = (int)(screenWidth - textWidth - 5 + slideOffset);
+            float x = screenWidth - textWidth - 5 + slideOffset;
             int yi = (int) y;
 
             int alpha = (int)(ease * 255);
@@ -99,8 +101,8 @@ public class Modulelist extends Module {
 
             graphics.fill(barX, yi, barX + 2, yi + barHeight + 1, withAlpha(accent, alpha));
 
-            graphics.drawString(font, name, x + 1, yi + 3, withAlpha(0x000000, (int)(alpha * 0.6f)), false);
-            graphics.drawString(font, name, x, yi + 3, withAlpha(0xFFFFFF, alpha), false);
+            float ty = yi + (barHeight - textHeight) / 2f + 1f;
+            Fonts.MAIN.drawString(graphics, name, x, ty, withAlpha(0xFFFFFF, alpha), scale);
 
             y += barHeight + 1;
         }
@@ -116,7 +118,7 @@ public class Modulelist extends Module {
                 it.remove();
                 continue;
             }
-            n.render(graphics, font, screenWidth, (int) notifY);
+            n.render(graphics, screenWidth, (int) notifY);
             notifY -= 22;
         }
     }
@@ -154,12 +156,13 @@ public class Modulelist extends Module {
             return fading && anim <= 0f;
         }
 
-        void render(GuiGraphics graphics, Font font, int screenWidth, int y) {
+        void render(GuiGraphics graphics, int screenWidth, int y) {
             float ease = anim * anim * (3f - 2f * anim);
+            float scale = 0.42f;
 
             String label = (enabled ? "+ " : "- ") + name;
-            int textWidth = font.width(label);
-            int barWidth = textWidth + 14;
+            float textWidth = Fonts.MAIN.getWidth(label, scale);
+            int barWidth = (int) textWidth + 14;
             int barHeight = 18;
 
             float slideOffset = (1f - ease) * 50f;
@@ -179,12 +182,9 @@ public class Modulelist extends Module {
             // Soft glow
             graphics.fill(barEnd - 4, y, barEnd - 2, y + barHeight, withAlphaStatic(accent, alpha / 3));
 
-            int textX = barX + 6;
-            int textY = y + 5;
-            graphics.drawString(font, label, textX + 1, textY + 1,
-                    withAlphaStatic(0x000000, (int) (alpha * 0.6f)), false);
-            graphics.drawString(font, label, textX, textY,
-                    withAlphaStatic(0xFFFFFF, alpha), false);
+            float textX = barX + 6;
+            float textY = y + (barHeight - Fonts.MAIN.getHeight(scale)) / 2f + 1f;
+            Fonts.MAIN.drawString(graphics, label, textX, textY, withAlphaStatic(0xFFFFFF, alpha), scale);
         }
 
         private static int withAlphaStatic(int color, int alpha) {

@@ -23,9 +23,9 @@ public class CrystalAutoClicker extends Module {
     private boolean placeNext = true;
 
     public NumberSetting minCPS =
-            new NumberSetting("MinCPS", 18, 1, 40, 1);
+            new NumberSetting("MinCPS", 1, 40, 18, 1);
     public NumberSetting maxCPS =
-            new NumberSetting("MaxCPS", 22, 1, 40, 1);
+            new NumberSetting("MaxCPS", 1, 40, 22, 1);
 
     public CrystalAutoClicker() {
         super("CrystalAutoClicker", Category.COMBAT,
@@ -37,6 +37,7 @@ public class CrystalAutoClicker extends Module {
     @Override
     public void onEvent(Event event, Timing time) {
         if (!(event instanceof EventTick)) return;
+        if(time == Timing.POST) return;
         if (mc.player == null || mc.level == null || mc.gameMode == null) return;
 
         // Only run while right mouse is held

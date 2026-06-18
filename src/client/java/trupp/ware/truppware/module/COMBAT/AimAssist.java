@@ -27,9 +27,9 @@ public class AimAssist extends Module {
 
     private static final double GRIM_GCD = 0.009600000008940697D;
 
-    public NumberSetting range = new NumberSetting("Range", 5, 1, 10, 0.1);
-    public NumberSetting strength = new NumberSetting("Strength", 3.0, 0.1, 10.0, 0.1);
-    public NumberSetting fov = new NumberSetting("FOV", 10, 90, 90, 5);
+    public NumberSetting range = new NumberSetting("Range", 1, 10, 5, 0.1);
+    public NumberSetting strength = new NumberSetting("Strength", 0.1, 10.0, 3.0, 0.1);
+    public NumberSetting fov = new NumberSetting("FOV", 10, 180, 90, 5);
     public AimAssist() {
         super("AimAssist", Category.COMBAT, "Human-like smooth aim", -1);
         addSettings(range, strength, fov);

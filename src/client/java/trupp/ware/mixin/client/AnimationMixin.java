@@ -104,6 +104,7 @@ public class AnimationMixin {
                 : player.getMainArm().getOpposite();
 
 
+
         Animation.instance.applyBlockAnimation(matrices, arm, equipProgress, swingProgress);
 
     }

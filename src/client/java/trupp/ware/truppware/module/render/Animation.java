@@ -32,17 +32,17 @@ public class Animation extends Module {
             "Off"       // no block animation
     ));
 
-    public NumberSetting swingSpeed = new NumberSetting("SwingSpeed", 6, 1, 20, 1);
-    public NumberSetting scaleMain     = new NumberSetting("Scale",         1.0, 0.1, 3.0,    0.05);
-    public NumberSetting translateX    = new NumberSetting("TranslateX",    0.0, -2.0, 2.0,   0.01);
-    public NumberSetting translateY    = new NumberSetting("TranslateY",    0.0, -2.0, 2.0,   0.01);
-    public NumberSetting translateZ    = new NumberSetting("TranslateZ",    0.0, -2.0, 2.0,   0.01);
-    public NumberSetting rotateX       = new NumberSetting("RotateX",       0.0, -180.0, 180.0, 1.0);
-    public NumberSetting rotateY       = new NumberSetting("RotateY",       0.0, -180.0, 180.0, 1.0);
-    public NumberSetting rotateZ       = new NumberSetting("RotateZ",       0.0, -180.0, 180.0, 1.0);
-    public NumberSetting swingDuration = new NumberSetting("SwingDuration", 6,   1, 20,        1);
-    public NumberSetting oneSevenY     = new NumberSetting("1.7Y",          0.1, 0.05, 0.3,   0.01);
-    public NumberSetting swingScale    = new NumberSetting("SwingScale",    0.9, 0.1, 1.0,    0.05);
+    public NumberSetting swingSpeed = new NumberSetting("SwingSpeed", 1, 20, 6, 1);
+    public NumberSetting scaleMain     = new NumberSetting("Scale",         0.1, 3.0,    1.0, 0.05);
+    public NumberSetting translateX    = new NumberSetting("TranslateX",    -2.0, 2.0,   0.0, 0.01);
+    public NumberSetting translateY    = new NumberSetting("TranslateY",    -2.0, 2.0,   0.0, 0.01);
+    public NumberSetting translateZ    = new NumberSetting("TranslateZ",    -2.0, 2.0,   0.0, 0.01);
+    public NumberSetting rotateX       = new NumberSetting("RotateX",       -180.0, 180.0, 0.0, 1.0);
+    public NumberSetting rotateY       = new NumberSetting("RotateY",       -180.0, 180.0, 0.0, 1.0);
+    public NumberSetting rotateZ       = new NumberSetting("RotateZ",       -180.0, 180.0, 0.0, 1.0);
+    public NumberSetting swingDuration = new NumberSetting("SwingDuration", 1, 20,        6,   1);
+    public NumberSetting oneSevenY     = new NumberSetting("1.7Y",          0.05, 0.3,   0.1, 0.01);
+    public NumberSetting swingScale    = new NumberSetting("SwingScale",    0.1, 1.0,    0.9, 0.05);
 
     public Animation() {
         super("Animations", Category.RENDER, "Custom item animations", -1);
@@ -67,10 +67,12 @@ public class Animation extends Module {
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
 
         boolean clicking = Minecraft.getInstance().mouseHandler.isLeftPressed() || Aura.targetInRange;
+        if(Minecraft.getInstance().player == null) return;
+        boolean clicking2 = Minecraft.getInstance().mouseHandler.isLeftPressed() && Minecraft.getInstance().mouseHandler.isRightPressed() || Aura.targetInRange;
         boolean isSword  = event.getItem().is(net.minecraft.tags.ItemTags.SWORDS);
 
         // Apply block animation mode
-        if (isSword && clicking && !blockMode.getCurrentMode().equals("Off")) {
+        if (isSword && clicking2 && !blockMode.getCurrentMode().equals("Off")) {
             event.fakeSwordBlock(true);
         }
 

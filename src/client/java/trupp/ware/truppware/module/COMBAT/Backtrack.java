@@ -33,8 +33,8 @@ public class Backtrack extends Module {
     private boolean releasing = false;
     public double dis = 0;
     private final List<Packet<?>> heldPackets = new ArrayList<>();
-    public NumberSetting range = new NumberSetting("Range", 3, 1, 6, 0.5);
-    public NumberSetting maxHoldTime = new NumberSetting("MaxHoldTime", 500, 100, 1000, 50);
+    public NumberSetting range = new NumberSetting("Range", 1, 6, 3, 0.5);
+    public NumberSetting maxHoldTime = new NumberSetting("MaxHoldTime", 100, 1000, 500, 50);
     public Backtrack() {
         super("Backtrack", Category.COMBAT, "Delays target movement packets to hit old positions", GLFW.GLFW_KEY_UNKNOWN);
         addSettings(range, maxHoldTime);

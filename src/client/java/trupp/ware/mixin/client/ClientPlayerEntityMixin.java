@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import trupp.ware.TruppWareClient;
 import trupp.ware.event.events.EventAttackStrength;
 import trupp.ware.event.events.EventKnockback;
+import trupp.ware.event.events.EventUpdate;
 import trupp.ware.event.events.Timing;
 import trupp.ware.truppware.module.Manager;
 import trupp.ware.truppware.module.Module;
@@ -48,20 +49,29 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayer {
         super.lerpMotion(new Vec3(kbEvent.getX(), kbEvent.getY(), kbEvent.getZ()));
     }
 
+    // EventUpdate: fired once per tick from sendPosition() — PRE at HEAD (right before the
+    // movement/flying packet is built) and POST at RETURN. Rotations set in PRE are carried by that
+    // flying packet and attack/use packets sent in PRE land in the correct order. Use this in combat
+    // modules (instead of EventTick) for correct packet timing.
+    @Inject(method = "sendPosition", at = @At("HEAD"))
+    private void truppware$preMotion(CallbackInfo ci) {
+        TruppWareClient.trupp.onEvent(new EventUpdate(), Timing.PRE);
+    }
+
+    @Inject(method = "sendPosition", at = @At("RETURN"))
+    private void truppware$postMotion(CallbackInfo ci) {
+        TruppWareClient.trupp.onEvent(new EventUpdate(), Timing.POST);
+    }
+
     @Redirect(
             method = "sendPosition",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getYRot()F")
     )
     private float modifyYaw(LocalPlayer instance) {
         if (minecraft.mouseHandler.isRightPressed()) return instance.getYRot();
-
-        for (Module m : Manager.trupp.modules) {
-            if ((m.getName().equalsIgnoreCase("Aura") || m.getName().equalsIgnoreCase("Scaffold")) && m.toggled) {
-                return RotationUtil.serverYaw;
-            }
-        }
-
-        return instance.getYRot();
+        // Gate on the central 'active' flag, which stays true through the smooth-out, so disabling
+        // a module eases the sent yaw back to real instead of snapping.
+        return RotationUtil.active ? RotationUtil.serverYaw : instance.getYRot();
     }
 
     @Redirect(
@@ -70,13 +80,6 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayer {
     )
     private float modifyPitch(LocalPlayer instance) {
         if (minecraft.mouseHandler.isRightPressed()) return instance.getXRot();
-
-        for (Module m : Manager.trupp.modules) {
-            if ((m.getName().equalsIgnoreCase("Aura") || m.getName().equalsIgnoreCase("Scaffold")) && m.toggled) {
-                return RotationUtil.serverPitch;
-            }
-        }
-
-        return instance.getXRot();
+        return RotationUtil.active ? RotationUtil.serverPitch : instance.getXRot();
     }
 }

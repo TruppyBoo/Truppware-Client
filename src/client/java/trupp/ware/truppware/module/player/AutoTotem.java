@@ -65,6 +65,7 @@ public class AutoTotem extends Module {
     @Override
     public void onEvent(Event e, Timing time) {
         if (!(e instanceof EventTick)) return;
+        if(time == Timing.POST) return;
         if (mc.player == null) return;
         if (mc.player.isDeadOrDying()) return;
 

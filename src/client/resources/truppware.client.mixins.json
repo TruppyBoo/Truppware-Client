@@ -4,7 +4,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"ExampleClientMixin", "KeybindMixin", "TickMixin", "GuiMixin",
-		"KeyMappingMixin", "LivingEntityRendererMixin",
+		"KeyMappingMixin", "LivingEntityRendererMixin", "RenderTypeAccessor", "GameRendererMixin",
 		"ClientCommonNetworkHandlerMixin", "ClientConnectionMixin",
 		"ClientPlayerEntityMixin", "MultiPlayerGameModeMixin", "MixinKeyboardInput", "ClientPacketListenerMixin",
 		"MixinPlayer", "AnimationMixin", "KeyboardInputMixin", "EntityMixin", "LivingEntityMixin", "MixinLocalPlayer"

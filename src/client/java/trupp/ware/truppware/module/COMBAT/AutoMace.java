@@ -1,13 +1,12 @@
 package trupp.ware.truppware.module.COMBAT;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MaceItem;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import trupp.ware.event.Event;
-import trupp.ware.event.events.EventRender;
 import trupp.ware.event.events.EventTick;
 import trupp.ware.event.events.Timing;
 import trupp.ware.interfaces.IKeyMappingExt;
@@ -25,12 +24,13 @@ public class AutoMace extends Module {
 
     @Override
     public void onEvent(Event e, Timing time) {
-        if (!(e instanceof EventRender)) return;
+        if (!(e instanceof EventTick)) return;
         if (mc.player == null) return;
+        if (time == Timing.POST) return;
 
-        HitResult hit = mc.hitResult;
+        LivingEntity target = getCombatTarget();
 
-        if (!(mc.player.fallDistance > 000.1) || !(hit instanceof EntityHitResult eResult) || !(eResult.getEntity() instanceof LivingEntity target)) {
+        if (!(mc.player.fallDistance > 0.1f) || target == null) {
             if (switched) {
                 switchSlot(previousSlot);
                 previousSlot = -1;
@@ -45,20 +45,41 @@ public class AutoMace extends Module {
         if (!switched && !ShieldBreaker.shield) {
             previousSlot = mc.player.getInventory().getSelectedSlot();
             switchSlot(maceSlot);
-            for(int i = 0; i <1; i ++)
-                ((IKeyMappingExt) mc.options.keyAttack).truppware$click();
+            if (Aura.enabled && Aura.currentTarget == target && mc.gameMode != null) {
+                for (int i = 0; i < 1; i++) {
+                    mc.gameMode.attack(mc.player, target);
+                    mc.player.swing(InteractionHand.MAIN_HAND);
+                }
+            } else {
+                for (int i = 0; i < 1; i++) {
+                    ((IKeyMappingExt) mc.options.keyAttack).truppware$click();
+                }
+            }
             switched = true;
         }
     }
 
-    private void switchSlot(int slot) {
-        try {
-            java.lang.reflect.Field f = mc.player.getInventory().getClass().getDeclaredField("selected");
-            f.setAccessible(true);
-            f.set(mc.player.getInventory(), slot);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    /**
+     * Resolves the entity we're aiming at. When Aura is on it uses Aura's silent-aim
+     * rotation (since the real crosshair never turns to the target); otherwise it
+     * falls back to the normal crosshair hit result for manual aiming.
+     */
+    private LivingEntity getCombatTarget() {
+        if (Aura.enabled && Aura.currentTarget != null
+                && Aura.currentTargetInRange && !Aura.currentTarget.isDeadOrDying()) {
+            return Aura.currentTarget;
         }
+        if (mc.hitResult instanceof EntityHitResult ehr && ehr.getEntity() instanceof LivingEntity le && !le.isDeadOrDying()) {
+            return le;
+        }
+        return null;
+    }
+
+    private void switchSlot(int slot) {
+        // (Original used reflection on a "selected" field — that's "selectedSlot" in 1.21 and threw
+        // every call, so it never actually swapped. setSelectedSlot is the working equivalent.)
+        if (mc.player == null || slot < 0 || slot > 8) return;
+        mc.player.getInventory().setSelectedSlot(slot);
     }
 
     private int findMaceInHotbar() {
