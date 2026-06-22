@@ -10,6 +10,7 @@ import trupp.ware.event.Event;
 import trupp.ware.event.events.EventTick;
 import trupp.ware.event.events.Timing;
 import trupp.ware.interfaces.IKeyMappingExt;
+import trupp.ware.interfaces.IMultiPlayerGameModeExt;
 import trupp.ware.truppware.module.Category;
 import trupp.ware.truppware.module.Module;
 
@@ -32,7 +33,9 @@ public class AutoMace extends Module {
 
         if (!(mc.player.fallDistance > 0.1f) || target == null) {
             if (switched) {
+                if (conflictingAction()) return;   // wait for a quiet tick to swap back (PacketOrderE)
                 switchSlot(previousSlot);
+                flushCarriedItem();
                 previousSlot = -1;
                 switched = false;
             }
@@ -43,15 +46,23 @@ public class AutoMace extends Module {
         if (maceSlot == -1) return;
 
         if (!switched && !ShieldBreaker.shield) {
+            // Grim PacketOrderE flags a held-slot change that shares a tick with an attack/use. Our
+            // switch's packet is normally flushed by the next attack (bundling it with the attack), so
+            // only switch on a QUIET tick — Aura runs before us, so Aura.attacking tells us it hit this
+            // tick — then flush the slot packet ourselves right now so no later attack carries it.
+            if (conflictingAction()) return;
             previousSlot = mc.player.getInventory().getSelectedSlot();
             switchSlot(maceSlot);
+            flushCarriedItem();
+            // One swing by default; ShieldDestroyer makes it a burst (its configured click count) to pop a shield.
+            int clickCount = ShieldDestroyer.clickCount();
             if (Aura.enabled && Aura.currentTarget == target && mc.gameMode != null) {
-                for (int i = 0; i < 1; i++) {
+                for (int i = 0; i < clickCount; i++) {
                     mc.gameMode.attack(mc.player, target);
                     mc.player.swing(InteractionHand.MAIN_HAND);
                 }
             } else {
-                for (int i = 0; i < 1; i++) {
+                for (int i = 0; i < clickCount; i++) {
                     ((IKeyMappingExt) mc.options.keyAttack).truppware$click();
                 }
             }
@@ -62,7 +73,7 @@ public class AutoMace extends Module {
     /**
      * Resolves the entity we're aiming at. When Aura is on it uses Aura's silent-aim
      * rotation (since the real crosshair never turns to the target); otherwise it
-     * falls back to the normal crosshair hit result for manual aiming.
+     * falls back to the normal dcrosshair hit result for manual aiming.
      */
     private LivingEntity getCombatTarget() {
         if (Aura.enabled && Aura.currentTarget != null
@@ -73,6 +84,18 @@ public class AutoMace extends Module {
             return le;
         }
         return null;
+    }
+
+    /** True on a tick that already carries a conflicting action, so changing the held slot now would
+     *  trip Grim PacketOrderE. Aura runs before us each tick, so Aura.attacking means it hit this tick. */
+    private boolean conflictingAction() {
+        return mc.player.isUsingItem() || (Aura.enabled && Aura.attacking);
+    }
+
+    /** Send the held-item-change packet now (its own packet on this quiet tick) so a later attack
+     *  doesn't flush it bundled with the attack -> avoids PacketOrderE. */
+    private void flushCarriedItem() {
+        if (mc.gameMode instanceof IMultiPlayerGameModeExt ext) ext.truppware$ensureCarriedItem();
     }
 
     private void switchSlot(int slot) {

@@ -42,6 +42,7 @@ public class Manager {
         modules.add(new EdgeDetect());
         modules.add(new InventoryManager());
         modules.add(new ShieldBreaker());
+        modules.add(new ShieldDestroyer());
         modules.add(new BlockBot());
         modules.add(new AutoMace());
         modules.add(new AutoTotem());

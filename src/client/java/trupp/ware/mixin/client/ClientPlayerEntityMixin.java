@@ -68,9 +68,12 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayer {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getYRot()F")
     )
     private float modifyYaw(LocalPlayer instance) {
-        if (minecraft.mouseHandler.isRightPressed()) return instance.getYRot();
-        // Gate on the central 'active' flag, which stays true through the smooth-out, so disabling
-        // a module eases the sent yaw back to real instead of snapping.
+        // Always send the silent yaw while a rotation module is active — INCLUDING while right-clicking.
+        // The old right-click exception sent the REAL yaw, but Aura's move-fix rotates your input
+        // against serverYaw, so the server then simulated your movement with the wrong yaw and your
+        // position desynced -> Grim "Simulation" flag the moment you held right-click. Gate on the
+        // central 'active' flag, which stays true through the smooth-out, so disabling a module eases
+        // the sent yaw back to real instead of snapping.
         return RotationUtil.active ? RotationUtil.serverYaw : instance.getYRot();
     }
 
@@ -79,7 +82,7 @@ public class ClientPlayerEntityMixin extends AbstractClientPlayer {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getXRot()F")
     )
     private float modifyPitch(LocalPlayer instance) {
-        if (minecraft.mouseHandler.isRightPressed()) return instance.getXRot();
+        // See modifyYaw: silent pitch always while active, even right-clicking, to avoid the desync.
         return RotationUtil.active ? RotationUtil.serverPitch : instance.getXRot();
     }
 }
